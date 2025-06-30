@@ -1,0 +1,52 @@
+.app-container {
+    max-width: 1000px !important;
+    margin-top: 46px !important;
+}
+
+#markdown-container {
+    margin: 0 auto;
+    border-color: rgba(0, 0, 0, 0.125);
+    border-radius: 4px;
+}
+
+h3 {
+    color: #b5651d;
+    font-size: 1.6em;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 5px;
+}
+
+ul,
+ol {
+    padding-left: 20px;
+    margin-top: 10px;
+}
+
+li {
+    margin-bottom: 8px;
+}
+
+strong {
+    color: rgb(0, 123, 255);
+    font-weight: bold;
+}
+
+p {
+    margin-bottom: 1em;
+    line-height: 1.6;
+}
+
+#chef-recommendation {
+  line-height: 1.5;
+}
+
+#title-recipes {
+  line-height: 1.5;
+}
+
+.spinner-grow {
+    width: 1.5rem;
+    /* Adjust width as needed */
+    height: 1.5rem;
+    /* Adjust height as needed */
+}

@@ -17,6 +17,10 @@
 
 <body>
   <div class="container app-container">
+    <div class="text-center mb-4"> <img src="logoHealthyBites.png" alt="Logo HealthyByte" class="img-fluid mb-2"
+        style="max-width: 250px; height: auto;">
+      <p class="lead text-muted">Your personal assistant for cooking healthy food</p>
+    </div>
     <div id="loginContainer">
       <p class="h4 mb-3">Please log in</p>
       <div class="form-group">
@@ -32,18 +36,16 @@
       </button>
     </div>
 
-    <div id="messageContainer" class="d-none">
+    <div id="inputFormContainer" class="d-none">
       <div class="form-group">
-        <p class="h4 mb-4">Our AI Cooking Chef suggests three recipes</p>
         <div class="container">
           <div class="row">
-            <div class="col-md-7 p-0"> 
-              <p class="h7 mb-0">Ingredients list</p>
+            <div class="col-md-7 p-0">
+              <label for="ingredients" class="h7 mb-0">Ingredients list</label>
               <input class="form-control" autocomplete="off" id="ingredients" />
             </div>
           </div>
         </div>
-
       </div>
 
       <div>
@@ -68,13 +70,15 @@
       </div>
 
       <div class="">
-        <div class="h5 m-2 mb-3" style="line-height: 1.5;" id="chef-presentation"></div>
+        <div class="h5 m-0 mb-3" id="title-recipes">Recipes:</div>
         <div class="list-group mb-5" id="recipes-list"></div>
+        <div class="h5 m-0" id="title-chef-recommendation">HealthyByte recommendation:</div>
+        <div class="m-2" id="chef-recommendation"></div>
       </div>
 
     </div>
 
-    <div class="mt-2 mb-3 d-none" id="logoutContainer">
+    <div class="mt-5 mb-3 d-none" id="logoutContainer">
       <small id="loggedAsContainer"></small>
       <button id="logoutButton" class="btn btn-secondary btn-sm ml-3">
         Log out
@@ -94,7 +98,7 @@
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
   <script type="module">
-    // Import the functions you need from the SDKs you need
+    // Import the functions you need from the Firebase SDKs
 
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js';
 
@@ -103,13 +107,15 @@
     import { getFunctions, httpsCallable } from 'https://www.gstatic.com/firebasejs/11.0.1/firebase-functions.js'
 
     const firebaseConfig = {
-            
-            // Ajoutez votre config Firebase
-            
-            // Cependant, notez que ce n'est pas un problème de rendre public votre config Firebase
-            // Voir https://stackoverflow.com/questions/37482366/is-it-safe-to-expose-firebase-apikey-to-the-public/37484053#37484053
 
-        };
+      apiKey: "AIzaSyDPlqUMdPJ9cPDOGpv0rErvBg0iNm-a0WE",
+      authDomain: "fir-genkit-cf.firebaseapp.com",
+      projectId: "fir-genkit-cf",
+      storageBucket: "fir-genkit-cf.firebasestorage.app",
+      messagingSenderId: "1020575553314",
+      appId: "1:1020575553314:web:cadd5bdda90c50511df77b"
+
+    };
 
     // Initialize Firebase
     const app = initializeApp(firebaseConfig);
@@ -120,6 +126,8 @@
 
     $(document).ready(() => {
       $("#spinner").hide();
+      $('#title-recipes').hide();
+      $('#title-chef-recommendation').hide();
       $('#loginButton').on('click', () => {
         const email = $('#email').val();
         const password = $('#password').val();
@@ -133,13 +141,13 @@
       onAuthStateChanged(auth, (user) => {
         if (user) {
           $('#loginContainer').addClass('d-none');
-          $('#messageContainer').removeClass('d-none');
+          $('#inputFormContainer').removeClass('d-none');
           $('#logoutContainer').removeClass('d-none');
           $('#loggedAsContainer').text('Logged in as ' + user.email);
         } else {
           $('#loggedAsContainer').text('');
           $('#loginContainer').removeClass('d-none');
-          $('#messageContainer').addClass('d-none');
+          $('#inputFormContainer').addClass('d-none');
           $('#logoutContainer').addClass('d-none');
         }
       });
@@ -151,22 +159,23 @@
     });
 
     async function callMenuSuggestionFlow() {
-      $('#chef-presentation').html('');
       $('#recipes-list').html('');
+      $('#chef-recommendation').html('');
       $("#spinner").show();
       const ingredients = $('#ingredients').val();
       const ingredientsArray = ingredients.split(",");
 
 
-      const menuSuggestionFlow = httpsCallable(functions, 'threeMenusSuggestion');
+      const menuSuggestionFlow = httpsCallable(functions, 'recipesSuggestion');
       const payload = { ingredients: ingredientsArray };
       const llmResponse = await menuSuggestionFlow(payload);
 
 
       $("#spinner").hide();
-
-      $('#chef-presentation').html(llmResponse.data.chefPresentation);
+      $('#title-recipes').show();
       displayRecipes(llmResponse.data.recipes) // Array of recipes
+      $('#title-chef-recommendation').show();
+      $('#chef-recommendation').html(llmResponse.data.healthiestRecommendation);
 
     }
 
@@ -183,15 +192,15 @@
     }
 
 
-
     function displayRecipes(recipesArray) {
       if (recipesArray.length > 0) {
         let htmlString = '';
         recipesArray.forEach((elem) => {
           htmlString += `<div class='list-group-item'>
                         <div class='h5 text-primary mb-2'>${elem.title}</div>
-                        <div class=''><span class="font-weight-bold">Ingredients:</span> ${elem.ingredients}</div>
-                        <div class=''><span class="font-weight-bold">Instructions:</span> ${elem.instructions}</div>
+                        <div class='mt-1'><span class="font-weight-bold">Ingredients:</span> ${elem.ingredients}</div>
+                        <div class='mt-1'><span class="font-weight-bold">Instructions:</span> ${elem.instructions}</div>
+                        <div class='mt-1'><span class="font-weight-bold">Nutrition information (for 1 person):</span> ${elem.nutritionInformation}</div>
                       </div>`;
         });
         $('#recipes-list').html(htmlString);
